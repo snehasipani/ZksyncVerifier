@@ -1,9 +1,17 @@
+// components/Timeline.tsx
 "use client";
+
 import React, { useMemo, useState } from "react";
 import Link from "next/link";
 import ProofCard, { Proof } from "./ProofCard";
 
-export default function Timeline({ proofs }: { proofs: Proof[] }) {
+type TimelineProps = {
+  proofs: Proof[];
+  onSelect?: (p: Proof) => void;
+  highlighted?: string | null;
+};
+
+export default function Timeline({ proofs, onSelect, highlighted = null }: TimelineProps) {
   const [query, setQuery] = useState("");
 
   function formatGroup(ts: number): string {
@@ -21,12 +29,12 @@ export default function Timeline({ proofs }: { proofs: Proof[] }) {
     const q = query.toLowerCase();
     const filtered = sorted.filter(
       (p) =>
-        p.cid.toLowerCase().includes(q) ||
-        p.owner.toLowerCase().includes(q) ||
-        (p.title?.toLowerCase().includes(q) ?? false)
+        (p.cid ?? "").toLowerCase().includes(q) ||
+        (p.owner ?? "").toLowerCase().includes(q) ||
+        ((p.title ?? "").toLowerCase().includes(q) ?? false)
     );
     return filtered.reduce<Record<string, Proof[]>>((acc, p) => {
-      const group = formatGroup(p.ts);
+      const group = formatGroup(p.ts ?? 0);
       if (!acc[group]) acc[group] = [];
       acc[group].push(p);
       return acc;
@@ -52,7 +60,7 @@ export default function Timeline({ proofs }: { proofs: Proof[] }) {
       </div>
 
       <div className="relative">
-        <div className="absolute left-4 top-0 bottom-0 w-px bg-neutral-700"></div>
+        <div className="absolute left-4 top-0 bottom-0 w-px bg-neutral-700" />
 
         <div className="flex flex-col gap-8">
           {groups.map((group) => (
@@ -60,21 +68,42 @@ export default function Timeline({ proofs }: { proofs: Proof[] }) {
               <h3 className="text-sm font-semibold text-neutral-400 mb-3 ml-10">{group}</h3>
               <div className="flex flex-col gap-6">
                 {grouped[group].map((p) => {
-                  // choose id to expose in URL (proof hash here)
                   const id = encodeURIComponent(p.proof ?? p.cid);
-                  return (
-                    <div key={p.proof} className="relative pl-10">
-                      <span className="absolute left-4 top-4 w-3 h-3 rounded-full bg-indigo-500 shadow-md"></span>
+                  const isHighlighted = !!(highlighted && p.proof === highlighted);
 
-                      {/* Wrap card in Link so clicking navigates to /proofs/[id] */}
+                  const wrapperClass =
+                    "relative pl-10 " + (isHighlighted ? "ring-2 ring-indigo-600 rounded" : "");
+
+                  const handleClick = (e?: React.MouseEvent) => {
+                    // call onSelect (if provided) in addition to navigation
+                    onSelect?.(p);
+                  };
+
+                  return (
+                    <div key={p.proof ?? p.cid} className={wrapperClass}>
+                      <span className="absolute left-4 top-4 w-3 h-3 rounded-full bg-indigo-500 shadow-md" />
+
                       <Link
                         href={`/proofs/${id}`}
                         prefetch={false}
                         className="block"
                         aria-label={`Open proof ${p.title ?? p.proof}`}
+                        onClick={handleClick}
                       >
-                        <ProofCard proof={p} />
+                        <ProofCard proof={p} highlighted={isHighlighted} />
                       </Link>
+
+                      {onSelect && (
+                        <div
+                          tabIndex={0}
+                          role="button"
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter") onSelect(p);
+                          }}
+                          aria-hidden
+                          className="sr-only"
+                        />
+                      )}
                     </div>
                   );
                 })}

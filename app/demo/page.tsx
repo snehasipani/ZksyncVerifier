@@ -196,14 +196,15 @@ export default function DemoPage() {
 
           <div className="mt-4">
             <h3 className="text-sm font-semibold mb-2">Timeline</h3>
-            <Timeline
-              proofs={proofs}
-              onSelect={(p) => {
-                setSelected(p);
-                window.scrollTo({ top: 0, behavior: "smooth" });
-              }}
-              highlighted={selected?.proof ?? null}
-            />
+        <Timeline
+  proofs={proofs}
+  onSelect={(p: Proof) => {
+    setSelected(p);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }}
+  highlighted={selected?.proof ?? null}
+/>
+
           </div>
         </div>
 

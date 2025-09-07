@@ -1,7 +1,7 @@
 // components/ProofCard.tsx
 "use client";
+
 import React, { useState } from "react";
-import { extractCidToken, makeGatewayUrlsFromCidToken, ipfsGatewayUrl } from "../../lib/ipfs";
 
 export type Proof = {
   id?: string;
@@ -14,15 +14,61 @@ export type Proof = {
   description?: string;
 };
 
-export default function ProofCard({
-  proof,
-  onRevealAction,
-  onShareAction,
-}: {
+// helper: returns just the CID token or null
+function extractCidToken(raw?: string | null): string | null {
+  if (!raw) return null;
+  let s = raw.trim();
+
+  if (s.startsWith("http://") || s.startsWith("https://")) {
+    const idx = s.indexOf("/ipfs/");
+    if (idx !== -1) {
+      s = s.slice(idx + "/ipfs/".length);
+    } else {
+      try {
+        const url = new URL(s);
+        const parts = url.pathname.split("/").filter(Boolean);
+        if (parts.length) s = parts[parts.length - 1];
+      } catch {
+        // noop
+      }
+    }
+  }
+
+  if (s.startsWith("ipfs://")) {
+    s = s.replace(/^ipfs:\/\//, "").replace(/^\/+/, "");
+  }
+
+  const ipfsIndex = s.indexOf("/ipfs/");
+  if (ipfsIndex !== -1) {
+    s = s.slice(ipfsIndex + "/ipfs/".length);
+  }
+
+  s = s.split(/[/?#]/)[0].trim();
+
+  if (/^(Qm[1-9A-HJ-NP-Za-km-z]{44}|bafy[a-z0-9]{52,})$/i.test(s)) return s;
+  if (/^[A-Za-z0-9]+$/.test(s) && s.length > 20 && s.length < 128) return s;
+
+  return null;
+}
+
+function makeGatewayUrlsFromCidToken(cidToken: string | null) {
+  if (!cidToken) return [];
+  return [`https://ipfs.io/ipfs/${cidToken}`, `https://dweb.link/ipfs/${cidToken}`];
+}
+
+type ProofCardProps = {
   proof: Proof;
+  highlighted?: boolean;
   onRevealAction?: (proof: Proof) => void;
   onShareAction?: (payload: Record<string, any>) => void;
-}) {
+};
+
+export default function ProofCard({
+  proof,
+  highlighted = false,
+  onRevealAction,
+  onShareAction,
+}: ProofCardProps) {
   const cidToken = extractCidToken(proof.cid);
   const gatewayUrls = makeGatewayUrlsFromCidToken(cidToken);
   const explorerTx = proof.txHash ? `https://explorer.zksync.io/tx/${proof.txHash}` : null;
@@ -79,8 +125,6 @@ export default function ProofCard({
     if (onRevealAction) onRevealAction(proof);
   }
 
-  // Try gateways in order. For each gateway, attempt a HEAD fetch to check
-  // availability; if fetch fails due to CORS we'll still open the first gateway.
   async function openBestGatewayOrFallback() {
     if (!cidToken) {
       if (proof.cid) {
@@ -92,7 +136,6 @@ export default function ProofCard({
       return;
     }
 
-    // try each gateway with a HEAD; if any responds ok open it
     for (const url of gatewayUrls) {
       try {
         const resp = await fetch(url, { method: "HEAD" });
@@ -102,13 +145,11 @@ export default function ProofCard({
         }
       } catch (err) {
         console.warn("fetch check failed (CORS/network) for", url, err);
-        // pragmatic fallback: open first gateway
         window.open(gatewayUrls[0], "_blank");
         return;
       }
     }
 
-    // none replied OK — open first gateway anyway so user sees gateway error page
     window.open(gatewayUrls[0], "_blank");
   }
 
@@ -143,17 +184,26 @@ export default function ProofCard({
     }
   }
 
+  const baseClass = "rounded p-4 flex flex-col gap-3 border ";
+  const highlightedClass = highlighted
+    ? "bg-neutral-700 border-indigo-500 shadow-md ring-2 ring-indigo-600"
+    : "bg-neutral-800 border-neutral-700";
+
   return (
-    <div className="bg-neutral-800 rounded p-4 flex flex-col gap-3">
+    <div className={baseClass + highlightedClass}>
       <div className="flex justify-between items-start">
         <div>
-          <div className="text-sm font-medium">{proof.title ?? (proof.cid ? proof.cid.slice(0, 24) : "untitled")}</div>
+          <div className="text-sm font-medium">
+            {proof.title ?? (proof.cid ? proof.cid.slice(0, 24) : "untitled")}
+          </div>
           <div className="text-xs text-neutral-400 break-all">{proof.description}</div>
         </div>
 
         <div className="text-xs text-neutral-400 text-right">
           <div>{formattedTime(proof.ts)}</div>
-          <div className="mt-1">{proof.txHash ? <span className="text-emerald-400">On-chain</span> : <span className="text-yellow-400">Local</span>}</div>
+          <div className="mt-1">
+            {proof.txHash ? <span className="text-emerald-400">On-chain</span> : <span className="text-yellow-400">Local</span>}
+          </div>
           <div className="mt-2 text-xs">
             <button
               onClick={(e) => {
@@ -168,7 +218,6 @@ export default function ProofCard({
         </div>
       </div>
 
-      {/* Action buttons */}
       <div className="flex gap-2">
         <button
           onClick={(e) => {
@@ -213,7 +262,6 @@ export default function ProofCard({
         {copied && <div className="ml-2 text-xs text-green-400">{copied}</div>}
       </div>
 
-      {/* Reveal area */}
       {showReveal && (
         <div className="mt-2 p-3 rounded bg-neutral-900 border border-neutral-800">
           <div className="text-xs text-neutral-400 mb-2">CID</div>
