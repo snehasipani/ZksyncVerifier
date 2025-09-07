@@ -1,36 +1,46 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# ZkSync Verifier 🛡️✨  
+**Prove your creativity without revealing it.**
 
-## Getting Started
+---
 
-First, run the development server:
+## 🔍 Problem
+- Proving authorship or originality of digital work (art, code, design, docs) is hard.  
+- Existing methods rely on centralized platforms or exposing the entire file.  
+- Content can be copied, timestamps forged, or intellectual property stolen.  
+- On-chain storage of raw files is costly and leaks private data.  
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+---
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## ✅ Solution — ZkSync Verifier
+ZkSync Verifier lets creators **prove ownership of their creative work** on-chain in a **cheap, scalable, and privacy-preserving way**.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+- Generate a **zero-knowledge proof** of authorship without revealing the full file.  
+- Store only the **hash / IPFS CID** instead of the actual file.  
+- Verify ownership instantly on **ZkSync Era L2** with minimal gas fees.  
+- Optionally **mint an NFT** as a portable badge of creativity.  
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+👉 In short: **“Proof without disclosure — creativity you can trust.”**
 
-## Learn More
+---
 
-To learn more about Next.js, take a look at the following resources:
+## ✨ Features
+- 📂 **File Uploader** → upload a creative work, store CID on IPFS.  
+- 🔒 **Zero-Knowledge Proofs** → prove authorship without revealing the file.  
+- ⛓️ **Smart Contracts** → `ProofOfCreativity.sol`, `ProofNFT.sol`, deployable via Hardhat.  
+- 🖼️ **NFT Minting (optional)** → turn proofs into verifiable, portable NFTs.  
+- 💻 **Client-Side Verifier** → verify zk-proofs in browser (`lib/verifier.ts`).  
+- ⚡ **Cheap & Scalable** → runs on ZkSync Era (Ethereum L2).  
+- 🧑‍⚖️ **Judge-Friendly Demo** → `/app/demo` route for quick interactive testing.  
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+---
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## 🛠️ How It Works
+1. **Upload** → File is hashed, CID stored on IPFS (not the raw file).  
+2. **Prove** → A zk-SNARK proof is generated showing knowledge of the file/CID.  
+3. **Verify** → Proof is verified on-chain or in browser using smart contracts + verifier lib.  
+4. **Mint (optional)** → Proof can be turned into an NFT (`ProofNFT.sol`) as a badge.  
+5. **Check** → Anyone can verify a proof in the `/app/proofs` UI.  
 
-## Deploy on Vercel
+---
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## 📂 Project Structure
