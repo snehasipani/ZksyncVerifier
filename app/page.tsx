@@ -1,103 +1,202 @@
-import Image from "next/image";
+"use client";
 
-export default function Home() {
+import React, { useEffect, useState } from "react";
+import FileUploader from "./components/FileUploader";
+import Timeline from "./components/Timeline";
+// import MintButton from "./components/MintButton";
+import type { Proof } from "./components/ProofCard";
+import { computeProof } from "../lib/utils";
+
+type UploadResult = {
+  cid: string;
+  fileName?: string;
+};
+
+export default function HomePage() {
+  const [proofs, setProofs] = useState<Proof[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [lastTx, setLastTx] = useState<string | undefined>(undefined);
+
+  // If you implement a server-side DB or event reader, you can call it here to seed proofs
+  useEffect(() => {
+    // Optional: load persisted proofs from localStorage for demo
+    const saved = typeof window !== "undefined" ? localStorage.getItem("zk_proofs") : null;
+    if (saved) {
+      try {
+        setProofs(JSON.parse(saved));
+      } catch {}
+    }
+  }, []);
+
+  useEffect(() => {
+    // persist locally for demo purposes
+    try {
+      localStorage.setItem("zk_proofs", JSON.stringify(proofs));
+    } catch {}
+  }, [proofs]);
+
+  // Handler invoked by FileUploader component
+  async function handleUploadComplete(cid: string, file: File) {
+    // title/description could be collected from a form UI — keep minimal here
+    const title = file.name;
+    const description = `Uploaded ${file.type} • ${Math.round(file.size / 1024)} KB`;
+
+    // timestamp (seconds)
+    const ts = Math.floor(Date.now() / 1000);
+
+    setLoading(true);
+    try {
+      // 1) compute proof locally
+      //    computeProof should be in lib/utils.ts and return ethers.utils.keccak256(...)
+      //    computeProof(cid, ownerAddress, ts) — but owner not available until signer is present.
+      // We will get signer address during contract call, so compute proof after storeProof returns owner and ts.
+      // 2) call web3.storeProof(cid) which should send tx from connected wallet and return tx hash + owner address + timestamp
+      let web3: any = null;
+      try {
+        web3 = await import("../lib/web3");
+      } catch (err) {
+        console.warn("lib/web3 not found — falling back to mock:", err);
+      }
+
+      // If web3.storeProof is implemented, call it. Otherwise simulate.
+      if (web3?.storeProof) {
+        // storeProof should call contract.storeProof(cid) and return { txHash, owner, timestamp }
+        const res = await web3.storeProof(cid);
+        const owner = res.owner || res.from || (await web3.getSignerAddress?.());
+        const timestamp = res.timestamp || ts;
+        const proofHash = computeProof(cid, owner, timestamp);
+
+        const newProof: Proof = {
+          cid,
+          owner,
+          proof: proofHash,
+          ts: timestamp,
+          txHash: res.txHash,
+          title,
+          description,
+        };
+
+        setProofs((p) => [newProof, ...p]);
+        setLastTx(res.txHash);
+      } else {
+        // MOCK flow for demo without contract:
+        const mockOwner = (window as any).ethereum
+          ? (await (await import("ethers")).getDefaultProvider()) && undefined
+          : "0x0000000000000000000000000000000000000000";
+        const mockOwnerAddr = "0x" + Math.random().toString(16).slice(2, 42).padEnd(40, "0");
+        const proofHash = computeProof(cid, mockOwnerAddr, ts);
+        const newProof: Proof = {
+          cid,
+          owner: mockOwnerAddr,
+          proof: proofHash,
+          ts,
+          txHash: undefined,
+          title,
+          description,
+        };
+        setProofs((p) => [newProof, ...p]);
+      }
+    } catch (err) {
+      console.error("Upload flow error", err);
+      alert("An error occurred during proof creation.");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  // Optional mint handler (used by MintButton). You should implement lib/web3.mintProofNFT
+  async function handleMint(metadataURI: string) {
+    try {
+      const web3 = await import("../lib/web3");
+      if (!web3?.mintProofNFT) {
+        alert("mint handler not implemented (lib/web3.mintProofNFT missing)");
+        return "";
+      }
+      const txHash = await web3.mintProofNFT(metadataURI);
+      return txHash;
+    } catch (err) {
+      console.error("mint error", err);
+      throw err;
+    }
+  }
+
   return (
-    <div className="font-sans grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="font-mono list-inside list-decimal text-sm/6 text-center sm:text-left">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] font-mono font-semibold px-1 py-0.5 rounded">
-              app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+    <div className="w-full">
+      <section className="mb-6">
+        <h1 className="text-3xl font-bold">zkProof of Creativity</h1>
+        <p className="mt-2 text-sm text-neutral-400 max-w-2xl">
+          Upload your artwork, code, or design — store it on IPFS and record a cheap proof on zkSync so
+          you can prove authorship later.
+        </p>
+      </section>
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+      <section className="mb-6">
+        <div className="flex flex-col md:flex-row gap-4">
+          <div className="flex-1">
+         
+   <FileUploader
+  onUploadCompleteAction={async ({ cid, file }) => {
+    await handleUploadComplete(cid, file);
+  }}
+/>
+
+
+          </div>
+
+          <div className="w-full md:w-72">
+            <div className="bg-neutral-800 p-4 rounded">
+              <h3 className="text-sm font-semibold mb-2">Quick actions</h3>
+              <div className="flex flex-col gap-2">
+            <button
+  onClick={async () => {
+    const web3 = await import("../lib/web3");
+    const owner = (await web3.getSignerAddress()) 
+      ?? "0x0000000000000000000000000000000000000000"; // fallback zero address
+
+    const ts = Math.floor(Date.now() / 1000);
+    const proofHash = computeProof("bafybeiexamplesamplecid", owner, ts);
+
+    const sample: Proof = {
+      cid: "bafybeiexamplesamplecid",
+      owner,
+      proof: proofHash,
+      ts,
+      txHash: undefined,
+      title: "Demo Sample",
+      description: "Sample proof to preview UI"
+    };
+
+    setProofs((p) => [sample, ...p]);
+  }}
+  className="px-3 py-2 rounded bg-indigo-600 hover:bg-indigo-500 text-sm"
+>
+  Add demo proof
+</button>
+
+{/* 
+                <MintButton
+                  onMint={async (metadataURI: string) => {
+                    const tx = await handleMint(metadataURI);
+                    alert("Mint tx: " + tx);
+                    return tx;
+                  }}
+                /> */}
+              </div>
+              {loading && <div className="mt-3 text-sm text-neutral-400">Processing…</div>}
+              {lastTx && (
+                <div className="mt-3 text-xs">
+                  Last tx: <a className="text-indigo-400" href={`https://explorer.zksync.io/tx/${lastTx}`} target="_blank" rel="noreferrer">{lastTx}</a>
+                </div>
+              )}
+            </div>
+          </div>
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+      </section>
+
+      <section>
+        <h2 className="text-xl font-semibold mb-3">Timeline</h2>
+        <Timeline proofs={proofs} />
+      </section>
     </div>
   );
 }

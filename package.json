@@ -1,27 +1,46 @@
 {
   "name": "zkproof-of-creativity",
-  "version": "0.1.0",
-  "private": true,
+  "version": "1.0.0",
+  "description": "This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).",
+  "main": "index.js",
+  "type": "module",
+  "directories": {
+    "test": "test"
+  },
   "scripts": {
-    "dev": "next dev --turbopack",
-    "build": "next build --turbopack",
+    "dev": "next dev",
+    "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "next lint",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@nomicfoundation/hardhat-ethers": "^3.1.0",
+    "@nomicfoundation/hardhat-toolbox": "^6.1.0",
+    "@tailwindcss/postcss": "^4.1.13",
+    "@types/file-saver": "^2.0.7",
+    "@types/node": "^24.3.1",
+    "autoprefixer": "^10.4.21",
+    "ethers": "^6.15.0",
+    "forge-std": "^1.1.2",
+    "hardhat": "^2.26.3",
+    "postcss": "^8.5.6",
+    "tailwindcss": "^4.1.13",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.9.2"
   },
   "dependencies": {
-    "react": "19.1.0",
-    "react-dom": "19.1.0",
-    "next": "15.5.2"
-  },
-  "devDependencies": {
-    "typescript": "^5",
-    "@types/node": "^20",
-    "@types/react": "^19",
-    "@types/react-dom": "^19",
-    "@tailwindcss/postcss": "^4",
-    "tailwindcss": "^4",
-    "eslint": "^9",
-    "eslint-config-next": "15.5.2",
-    "@eslint/eslintrc": "^3"
+    "@openzeppelin/contracts": "^5.4.0",
+    "@walletconnect/web3-provider": "^1.8.0",
+    "@web3-storage/w3up-client": "^17.3.0",
+    "dotenv": "^17.2.2",
+    "file-saver": "^2.0.5",
+    "next": "^15.5.2",
+    "react": "^19.1.1",
+    "react-dom": "^19.1.1",
+    "web3.storage": "4.5.5"
   }
 }
