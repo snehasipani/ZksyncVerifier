@@ -1,64 +1,62 @@
-ZkSync Verifier 🛡️✨
+# ZkSync Verifier 🛡️✨
 
-Prove your creativity without revealing it.
+**Prove your creativity without revealing it.**
 
-🔍 Problem
+---
 
-Proving authorship or originality of digital work (art, code, design, docs) is hard.
+## 🔍 Problem
 
-Existing methods rely on centralized platforms or exposing the entire file.
+* Proving authorship or originality of digital work (art, code, design, docs) is hard.
+* Existing methods rely on centralized platforms or exposing the entire file.
+* Content can be copied, timestamps forged, or intellectual property stolen.
+* On-chain storage of raw files is costly and leaks private data.
 
-Content can be copied, timestamps forged, or intellectual property stolen.
+---
 
-On-chain storage of raw files is costly and leaks private data.
+## ✅ Solution — ZkSync Verifier
 
-✅ Solution — ZkSync Verifier
+ZkSync Verifier lets creators **prove ownership of their creative work** on-chain in a **cheap, scalable, and privacy-preserving way**.
 
-ZkSync Verifier lets creators prove ownership of their creative work on-chain in a cheap, scalable, and privacy-preserving way.
+* Generate a **zero-knowledge proof** of authorship without revealing the full file.
+* Store only the **hash / IPFS CID** instead of the actual file.
+* Verify ownership instantly on **ZkSync Era L2** with minimal gas fees.
+* Optionally **mint an NFT** as a portable badge of creativity.
 
-Generate a zero-knowledge proof of authorship without revealing the full file.
+👉 In short: **“Proof without disclosure — creativity you can trust.”**
 
-Store only the hash / IPFS CID instead of the actual file.
+---
 
-Verify ownership instantly on ZkSync Era L2 with minimal gas fees.
+## 🔗 Live Demo
 
-Optionally mint an NFT as a portable badge of creativity.
+**Project live on Vercel:** [https://zkproof-of-creativity.vercel.app/](https://zkproof-of-creativity.vercel.app/)
 
-👉 In short: “Proof without disclosure — creativity you can trust.”
+---
 
-🔗 Live Demo
+## ✨ Features
 
-Project live on Vercel: https://zkproof-of-creativity.vercel.app/
+* 📂 **File Uploader** → upload a creative work, store CID on IPFS.
+* 🔒 **Zero-Knowledge Proofs** → prove authorship without revealing the file.
+* ⛓️ **Smart Contracts** → `ProofOfCreativity.sol`, `ProofNFT.sol`, deployable via Hardhat.
+* 🖼️ **NFT Minting (optional)** → turn proofs into verifiable, portable NFTs.
+* 💻 **Client-Side Verifier** → verify zk-proofs in browser (`lib/verifier.ts`).
+* ⚡ **Cheap & Scalable** → runs on ZkSync Era (Ethereum L2).
+* 🧑‍⚖️ **Judge-Friendly Demo** → `/app/demo` route for quick interactive testing.
 
-✨ Features
+---
 
-📂 File Uploader → upload a creative work, store CID on IPFS.
+## 🛠️ How It Works
 
-🔒 Zero-Knowledge Proofs → prove authorship without revealing the file.
+1. **Upload** → File is hashed, CID stored on IPFS (not the raw file).
+2. **Prove** → A zk-SNARK proof is generated showing knowledge of the file/CID.
+3. **Verify** → Proof is verified on-chain or in browser using smart contracts + verifier lib.
+4. **Mint (optional)** → Proof can be turned into an NFT (`ProofNFT.sol`) as a badge.
+5. **Check** → Anyone can verify a proof in the `/app/proofs` UI.
 
-⛓️ Smart Contracts → ProofOfCreativity.sol, ProofNFT.sol, deployable via Hardhat.
+---
 
-🖼️ NFT Minting (optional) → turn proofs into verifiable, portable NFTs.
+## 📂 Project Structure
 
-💻 Client-Side Verifier → verify zk-proofs in browser (lib/verifier.ts).
-
-⚡ Cheap & Scalable → runs on ZkSync Era (Ethereum L2).
-
-🧑‍⚖️ Judge-Friendly Demo → /app/demo route for quick interactive testing.
-
-🛠️ How It Works
-
-Upload → File is hashed, CID stored on IPFS (not the raw file).
-
-Prove → A zk-SNARK proof is generated showing knowledge of the file/CID.
-
-Verify → Proof is verified on-chain or in browser using smart contracts + verifier lib.
-
-Mint (optional) → Proof can be turned into an NFT (ProofNFT.sol) as a badge.
-
-Check → Anyone can verify a proof in the /app/proofs UI.
-
-📂 Project Structure
+```
 zkproof-of-creativity/
 │
 ├── app/
@@ -80,24 +78,29 @@ zkproof-of-creativity/
 ├── hardhat.config.cjs
 ├── package.json
 └── README.md
-🚀 Quickstart
+```
 
-npm install
+---
 
-Configure .env with your pinning service API key (e.g., web3.storage or Pinata) if you want user uploads pinned.
+## 🚀 Quickstart
 
-npm run dev to run the demo locally.
+1. `npm install`
+2. Configure `.env` with your pinning service API key (e.g., web3.storage or Pinata) if you want user uploads pinned.
+3. `npm run dev` to run the demo locally.
+4. Use Hardhat to deploy contracts: `npx hardhat run --network zksync scripts/deploy.ts` (adjust network config).
 
-Use Hardhat to deploy contracts: npx hardhat run --network zksync scripts/deploy.ts (adjust network config).
+---
 
-🙋‍♀️ Notes & Recommendations
+## 🙋‍♀️ Notes & Recommendations
 
-For demo/hackathon use, web3.storage offers a simple free tier (1GB) and is recommended for quick onboarding.
+* For demo/hackathon use, web3.storage offers a simple free tier (1GB) and is recommended for quick onboarding.
+* Never store pinning API keys in frontend code — keep them in server-side env or use a proxy.
+* The `/app/demo` route is intentionally minimal to help judges validate functionality quickly without building locally.
 
-Never store pinning API keys in frontend code — keep them in server-side env or use a proxy.
+---
 
-The /app/demo route is intentionally minimal to help judges validate functionality quickly without building locally.
-
-📬 Contact
+## 📬 Contact
 
 If you want help extending the verifier, adding more proof circuits, or integrating a different L2, open an issue or contact the maintainer.
+
+---
