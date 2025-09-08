@@ -54,33 +54,6 @@ ZkSync Verifier lets creators **prove ownership of their creative work** on-chai
 
 ---
 
-## 📂 Project Structure
-
-```
-zkproof-of-creativity/
-│
-├── app/
-│   ├── layout.tsx
-│   ├── globals.css
-│   ├── page.tsx
-│   ├── proofs/page.tsx
-│   ├── proofs/[id]/page.tsx
-│   ├── demo/                    # small interactive demo route for judges
-│   │   └── page.tsx
-│   └── ...
-├── contracts/
-│   ├── ProofOfCreativity.sol
-│   └── ProofNFT.sol
-├── lib/
-│   └── verifier.ts              # client-side verifier for zk-proofs
-├── scripts/
-│   └── deploy.ts                # hardhat deployment scripts
-├── hardhat.config.cjs
-├── package.json
-└── README.md
-```
-
----
 
 ## 🚀 Quickstart
 
